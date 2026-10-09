@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Chaos — College Life Simulator | 2D Retro Game</title>
+  <meta name="description" content="Campus Chaos is an interactive retro pixel-art college life simulator game. Balance academics, coding skills, energy, friendships, and placement wars across 4 engineering college chapters!">
+  <meta name="theme-color" content="#0d0b18">
+
+  <!-- Google Fonts for Retro Headings and Readable Story Text -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;500;600;700&family=VT323&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient Audio Indicator / Quick Floating Toolbar -->
+  <div id="quick-bar" class="quick-bar" aria-label="Quick Actions">
+    <button id="btn-sound-toggle" class="retro-icon-btn" title="Toggle Sound (M)" aria-label="Toggle Sound">
+      <span class="icon" id="sound-icon">🔊</span>
+      <span class="btn-text">SFX: ON</span>
+    </button>
+    <button id="btn-pause-toggle" class="retro-icon-btn" title="Pause / Settings (Esc)" aria-label="Pause / Settings">
+      <span class="icon">⚙️</span>
+      <span class="btn-text">MENU</span>
+    </button>
+  </div>
+
+  <!-- Scanline CRT Effect Overlay -->
+  <div class="crt-overlay" aria-hidden="true"></div>
+
+  <!-- Notification Banner / Toast Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- App Wrapper -->
+  <div id="app" class="game-container">
+
+    <!-- ============================================================= -->
+    <!-- SCREEN 1: MAIN MENU -->
+    <!-- ============================================================= -->
+    <section id="screen-menu" class="screen screen-active">
+      <div class="menu-backdrop">
+        <canvas id="menu-canvas" class="menu-bg-canvas" width="640" height="360"></canvas>
+      </div>
+      
+      <div class="menu-content">
+        <div class="logo-box">
+          <div class="badge-tag">ENGINEERING SIMULATOR 2026</div>
+          <h1 class="game-title pixel-text">CAMPUS<br><span class="title-chaos">CHAOS</span></h1>
+          <p class="game-tagline">Code. Study. Survive. Get Placed.</p>
+        </div>
+
+        <div class="menu-actions">
+          <button id="btn-new-game" class="retro-btn btn-primary pulse-hover">
+            <span class="btn-icon">▶</span> START NEW JOURNEY
+          </button>
+          <button id="btn-continue" class="retro-btn btn-secondary" disabled>
+            <span class="btn-icon">💾</span> CONTINUE JOURNEY
+          </button>
+          <button id="btn-how-to-play" class="retro-btn btn-tertiary">
+            <span class="btn-icon">📖</span> HOW TO PLAY
+          </button>
+          <button id="btn-credits" class="retro-btn btn-ghost">
+            <span class="btn-icon">⭐</span> GAME CREDITS & TIPS
+          </button>
+        </div>
+
+        <div class="menu-footer">
+          <span>v1.0.0 Indie Release</span> • <span>Pure HTML5 / Vanilla JS</span> • <span>Auto-saves to LocalStorage</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <!-- SCREEN 2: CHARACTER SETUP -->
+    <!-- ============================================================= -->
+    <section id="screen-setup" class="screen screen-hidden">
+      <div class="setup-container retro-panel">
+        <header class="panel-header">
+          <button id="btn-setup-back" class="retro-btn-sm" aria-label="Back to main menu">◀ BACK</button>
+          <h2 class="panel-title pixel-text">FRESHER REGISTRATION</h2>
+          <span class="chip-step">SEMESTER 1</span>
+        </header>
+
+        <form id="char-setup-form" class="setup-form" onsubmit="return false;">
+          <div class="setup-grid">
+            <!-- Left Column: Character Avatar Preview & Customization -->
+            <div class="avatar-preview-box">
+              <div class="preview-label pixel-text-sm">STUDENT ID CARD</div>
+              <div class="avatar-canvas-wrapper">
+                <canvas id="avatar-preview-canvas" width="160" height="160"></canvas>
+              </div>
+              <div class="avatar-customizers">
+                <div class="custom-row">
+                  <label for="avatar-skin">SKIN:</label>
+                  <div class="color-options" id="skin-options">
+                    <button type="button" class="color-dot active" data-color="#ffdbac" style="background:#ffdbac;" title="Fair"></button>
+                    <button type="button" class="color-dot" data-color="#f1c27d" style="background:#f1c27d;" title="Medium"></button>
+                    <button type="button" class="color-dot" data-color="#c68642" style="background:#c68642;" title="Tan"></button>
+                    <button type="button" class="color-dot" data-color="#8d5524" style="background:#8d5524;" title="Deep"></button>
+                  </div>
+                </div>
+                <div class="custom-row">
+                  <label for="avatar-hair">HAIR:</label>
+                  <div class="color-options" id="hair-options">
+                    <button type="button" class="color-dot active" data-color="#2c1810" style="background:#2c1810;" title="Dark Brown"></button>
+                    <button type="button" class="color-dot" data-color="#000000" style="background:#000000;" title="Jet Black"></button>
+                    <button type="button" class="color-dot" data-color="#ff7b00" style="background:#ff7b00;" title="Auburn/Orange"></button>
+                    <button type="button" class="color-dot" data-color="#00f5d4" style="background:#00f5d4;" title="Cyber Cyan"></button>
+                    <button type="button" class="color-dot" data-color="#f72585" style="background:#f72585;" title="Neon Pink"></button>
+                  </div>
+                </div>
+                <div class="custom-row">
+                  <label for="avatar-hoodie">HOODIE:</label>
+                  <div class="color-options" id="hoodie-options">
+                    <button type="button" class="color-dot active" data-color="#7209b7" style="background:#7209b7;" title="Electric Purple"></button>
+                    <button type="button" class="color-dot" data-color="#3a0ca3" style="background:#3a0ca3;" title="Royal Navy"></button>
+                    <button type="button" class="color-dot" data-color="#06d6a0" style="background:#06d6a0;" title="Mint Green"></button>
+                    <button type="button" class="color-dot" data-color="#e63946" style="background:#e63946;" title="Crimson Red"></button>
+                    <button type="button" class="color-dot" data-color="#ffd166" style="background:#ffd166;" title="Arcade Gold"></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Student Details & Archetype -->
+            <div class="setup-details-box">
+              <div class="input-group">
+                <label for="input-char-name" class="pixel-label">STUDENT NAME:</label>
+                <input type="text" id="input-char-name" class="retro-input" placeholder="e.g. Alex Sharma" maxlength="18" required value="Alex Ray">
+              </div>
+
+              <div class="input-group">
+                <label class="pixel-label">ENGINEERING STREAM:</label>
+                <div class="branch-selector" id="branch-selector">
+                  <button type="button" class="branch-chip active" data-branch="CSE">
+                    <span class="branch-icon">💻</span>
+                    <span class="branch-name">Computer Science</span>
+                  </button>
+                  <button type="button" class="branch-chip" data-branch="AI">
+                    <span class="branch-icon">🤖</span>
+                    <span class="branch-name">AI & Data Science</span>
+                  </button>
+                  <button type="button" class="branch-chip" data-branch="ECE">
+                    <span class="branch-icon">⚡</span>
+                    <span class="branch-name">Electronics & Comm.</span>
+                  </button>
+                  <button type="button" class="branch-chip" data-branch="IT">
+                    <span class="branch-icon">🌐</span>
+                    <span class="branch-name">Information Tech</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label class="pixel-label">STARTING TRAIT / ARCHETYPE:</label>
+                <div class="trait-selector" id="trait-selector">
+                  <div class="trait-card active" data-trait="coder">
+                    <div class="trait-badge">CODE WIZARD</div>
+                    <div class="trait-desc">+10 Starting Skills, -5 Energy. Always has a terminal open.</div>
+                  </div>
+                  <div class="trait-card" data-trait="scholar">
+                    <div class="trait-badge">STUDIOUS TOPPER</div>
+                    <div class="trait-desc">+10 Starting Academics, -5 Relationships. Notes are legendary.</div>
+                  </div>
+                  <div class="trait-card" data-trait="socialite">
+                    <div class="trait-badge">CAMPUS CONNECTOR</div>
+                    <div class="trait-desc">+10 Starting Relationships, +5 Energy. Knows seniors & clubs.</div>
+                  </div>
+                  <div class="trait-card" data-trait="hustler">
+                    <div class="trait-badge">STARTUP HUSTLER</div>
+                    <div class="trait-desc">+10 Starting Career Readiness, -5 Academics. Building in public.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="setup-footer">
+            <button type="button" id="btn-start-game" class="retro-btn btn-primary pulse-hover">
+              ENTER CAMPUS GATES 🎓
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <!-- SCREEN 3: GAMEPLAY / STORY SCREEN -->
+    <!-- ============================================================= -->
+    <section id="screen-game" class="screen screen-hidden">
+      <!-- Top HUD Header -->
+      <header class="game-hud">
+        <div class="hud-profile">
+          <div class="hud-avatar-box">
+            <canvas id="hud-avatar-canvas" width="48" height="48"></canvas>
+          </div>
+          <div class="hud-meta">
+            <div class="hud-name" id="hud-player-name">Player Name</div>
+            <div class="hud-badges">
+              <span class="badge-pill" id="hud-branch-badge">CSE</span>
+              <span class="badge-pill badge-trait" id="hud-trait-badge">Code Wizard</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hud-timeline">
+          <div class="timeline-chapter" id="hud-chapter-text">CHAPTER 1: FRESHERS' YEAR</div>
+          <div class="timeline-week" id="hud-week-text">WEEK 1 / 16</div>
+          <div class="timeline-bar">
+            <div class="timeline-fill" id="hud-progress-fill" style="width: 6.25%;"></div>
+          </div>
+        </div>
+
+        <div class="hud-actions">
+          <button id="btn-hud-inventory" class="retro-btn-sm" title="View Traits & Milestones">
+            🎒 PERKS (<span id="hud-perk-count">0</span>)
+          </button>
+          <button id="btn-hud-menu" class="retro-btn-sm" title="Settings / Pause">
+            ⚙️ MENU
+          </button>
+        </div>
+      </header>
+
+      <!-- Stats Dashboard (5 Stats: Academics, Skills, Energy, Relationships, Career) -->
+      <div class="stats-dashboard" role="region" aria-label="Player Statistics">
+        <!-- Stat 1: Academics -->
+        <div class="stat-card" data-stat="academics">
+          <div class="stat-header">
+            <span class="stat-icon">📚</span>
+            <span class="stat-label">Academics</span>
+            <span class="stat-val" id="val-academics">50</span>
+          </div>
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill fill-academics" id="bar-academics" style="width: 50%;"></div>
+          </div>
+        </div>
+
+        <!-- Stat 2: Skills -->
+        <div class="stat-card" data-stat="skills">
+          <div class="stat-header">
+            <span class="stat-icon">💻</span>
+            <span class="stat-label">Coding Skills</span>
+            <span class="stat-val" id="val-skills">50</span>
+          </div>
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill fill-skills" id="bar-skills" style="width: 50%;"></div>
+          </div>
+        </div>
+
+        <!-- Stat 3: Energy -->
+        <div class="stat-card" data-stat="energy">
+          <div class="stat-header">
+            <span class="stat-icon">⚡</span>
+            <span class="stat-label">Energy & Health</span>
+            <span class="stat-val" id="val-energy">70</span>
+          </div>
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill fill-energy" id="bar-energy" style="width: 70%;"></div>
+          </div>
+        </div>
+
+        <!-- Stat 4: Relationships -->
+        <div class="stat-card" data-stat="relationships">
+          <div class="stat-header">
+            <span class="stat-icon">🤝</span>
+            <span class="stat-label">Relationships</span>
+            <span class="stat-val" id="val-relationships">50</span>
+          </div>
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill fill-relationships" id="bar-relationships" style="width: 50%;"></div>
+          </div>
+        </div>
+
+        <!-- Stat 5: Career Readiness -->
+        <div class="stat-card" data-stat="career">
+          <div class="stat-header">
+            <span class="stat-icon">💼</span>
+            <span class="stat-label">Career Ready</span>
+            <span class="stat-val" id="val-career">30</span>
+          </div>
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill fill-career" id="bar-career" style="width: 30%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Story Arena -->
+      <main class="story-arena">
+        <!-- Pixel Scene Illustration Canvas -->
+        <div class="scene-stage">
+          <canvas id="scene-canvas" width="720" height="300" class="scene-canvas"></canvas>
+          <div class="scene-location-badge" id="scene-location-badge">
+            <span class="loc-icon">📍</span> <span id="scene-location-name">Campus Main Gate</span>
+          </div>
+          <div class="scene-mood-overlay" id="scene-mood-overlay"></div>
+          <div id="stat-particles-anchor" class="stat-particles-container"></div>
+        </div>
+
+        <!-- Story Narrative Box -->
+        <div class="narrative-box">
+          <div class="narrative-header">
+            <span class="narrative-tag" id="narrative-category-tag">CAMPUS EVENT</span>
+            <h2 class="narrative-title pixel-text" id="narrative-event-title">The First Lecture Dilemma</h2>
+          </div>
+          <div class="narrative-body" id="narrative-text">
+            It is 7:55 AM on a chilly Monday morning. The legendary Professor Sen is notorious for locking the classroom door at exactly 8:00 AM sharp for Digital Electronics...
+          </div>
+        </div>
+
+        <!-- Choice Container (Selectable Options) -->
+        <div class="choices-container" id="choices-container" role="group" aria-label="Story Choices">
+          <!-- Dynamically populated choice cards -->
+        </div>
+      </main>
+    </section>
+
+    <!-- ============================================================= -->
+    <!-- SCREEN 4: CHAPTER INTERMISSION / MILESTONE -->
+    <!-- ============================================================= -->
+    <section id="screen-chapter-summary" class="screen screen-hidden">
+      <div class="summary-modal retro-panel">
+        <div class="summary-header">
+          <div class="badge-tag">SEMESTER COMPLETED</div>
+          <h2 class="summary-title pixel-text" id="chapter-summary-title">CHAPTER 1 COMPLETED!</h2>
+          <p class="summary-subtitle" id="chapter-summary-subtitle">Freshers' year is behind you. Welcome to the real grind.</p>
+        </div>
+
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="card-title pixel-text-sm">SEMESTER EVALUATION</div>
+            <div class="gpa-box">
+              <span class="gpa-label">Estimated SGPA:</span>
+              <span class="gpa-val pixel-text" id="summary-sgpa">8.4 / 10</span>
+            </div>
+            <p class="summary-eval-text" id="summary-eval-desc">
+              You survived your first year! Your professors know your face, you built your first terminal app, and your hostel group chat is popping.
+            </p>
+          </div>
+
+          <div class="summary-card">
+            <div class="card-title pixel-text-sm">CURRENT STANDINGS</div>
+            <div class="summary-stats-list" id="summary-stats-breakdown">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-footer">
+          <button id="btn-next-chapter" class="retro-btn btn-primary pulse-hover">
+            PROCEED TO NEXT CHAPTER ➔
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <!-- SCREEN 5: GAME OVER / FINAL GRADUATION & ENDING -->
+    <!-- ============================================================= -->
+    <section id="screen-ending" class="screen screen-hidden">
+      <div class="ending-container retro-panel">
+        <div class="ending-header">
+          <div class="badge-tag">CONVOCATION DAY • 4-YEAR JOURNEY FINALE</div>
+          <h1 class="ending-title pixel-text" id="ending-title">THE DREAM OFFER</h1>
+          <div class="ending-badge" id="ending-badge-icon">🏆</div>
+        </div>
+
+        <div class="ending-content-grid">
+          <!-- Ending Story & Epilogue -->
+          <div class="ending-story-panel">
+            <h3 class="panel-section-title pixel-text-sm">EPILOGUE</h3>
+            <div class="ending-narrative" id="ending-narrative-text">
+              Four intense years of midnight debugging, chai at 3 AM, proxy attendance, and endless interview rounds have concluded...
+            </div>
+
+            <!-- Graduation Certificate / Degree Card -->
+            <div class="retro-certificate">
+              <div class="cert-border">
+                <div class="cert-header">INSTITUTE OF TECHNOLOGY & CHAOS</div>
+                <div class="cert-title">DEGREE OF BACHELOR OF TECHNOLOGY</div>
+                <div class="cert-body">
+                  Conferred upon <strong id="cert-student-name">Alex Ray</strong> (<span id="cert-branch">Computer Science</span>)
+                  with rank: <strong id="cert-honors">Summa Cum Laude</strong>
+                </div>
+                <div class="cert-footer">
+                  <span>Authorized by Dean & Placement Cell</span>
+                  <span class="cert-seal">🎖️ VERIFIED</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Final Report Card & Stats -->
+          <div class="ending-stats-panel">
+            <h3 class="panel-section-title pixel-text-sm">FINAL TRANSCRIPT</h3>
+            <div class="final-stats-bars" id="final-stats-bars">
+              <!-- Dynamic stat bars -->
+            </div>
+
+            <div class="milestones-box">
+              <div class="card-title pixel-text-sm">UNLOCKED ACHIEVEMENTS & PERKS</div>
+              <ul class="achievements-list" id="final-achievements-list">
+                <!-- Dynamic milestones -->
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="ending-actions">
+          <button id="btn-share-ending" class="retro-btn btn-secondary">
+            📋 COPY GRADUATION SUMMARY
+          </button>
+          <button id="btn-restart-game" class="retro-btn btn-primary pulse-hover">
+            🔄 PLAY AGAIN (TRY DIFFERENT PATH)
+          </button>
+          <button id="btn-ending-menu" class="retro-btn btn-tertiary">
+            🏠 MAIN MENU
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <!-- MODAL: DECISION FEEDBACK (CONSEQUENCE MODAL) -->
+    <!-- ============================================================= -->
+    <div id="modal-feedback" class="modal-backdrop modal-hidden" role="dialog" aria-modal="true" aria-labelledby="feedback-title">
+      <div class="modal-card retro-panel feedback-card">
+        <div class="feedback-badge-row">
+          <span class="badge-tag" id="feedback-choice-tag">CHOICE RECORDED</span>
+          <span class="feedback-icon" id="feedback-mood-icon">💡</span>
+        </div>
+        <h3 class="feedback-title pixel-text" id="feedback-title">Night Owl Hacker!</h3>
+        <p class="feedback-narrative" id="feedback-narrative">
+          You skipped sleep and refactored your entire distributed backend. Your professor was stunned, but your eyes look like burnt coal.
+        </p>
+
+        <div class="feedback-deltas-container">
+          <div class="deltas-title pixel-text-sm">STAT CHANGES:</div>
+          <div class="deltas-grid" id="feedback-deltas-grid">
+            <!-- Dynamic delta pills: e.g. +15 Skills, -10 Energy -->
+          </div>
+        </div>
+
+        <div id="feedback-perk-unlock" class="perk-unlock-banner hidden">
+          <span class="perk-icon">✨</span>
+          <span class="perk-text" id="feedback-perk-text">Unlocked: "Open Source Contributor" perk!</span>
+        </div>
+
+        <button id="btn-feedback-next" class="retro-btn btn-primary pulse-hover">
+          NEXT WEEK ➔
+        </button>
+      </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- MODAL: PAUSE & SETTINGS -->
+    <!-- ============================================================= -->
+    <div id="modal-settings" class="modal-backdrop modal-hidden" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <div class="modal-card retro-panel settings-card">
+        <header class="panel-header">
+          <h3 class="panel-title pixel-text" id="settings-title">SETTINGS & PAUSE</h3>
+          <button id="btn-close-settings" class="retro-btn-sm" aria-label="Close Settings">✖</button>
+        </header>
+
+        <div class="settings-content">
+          <div class="setting-row">
+            <span class="setting-label">Sound Effects (8-bit Synthesizer):</span>
+            <button id="btn-toggle-sfx-modal" class="retro-toggle-btn active">ON</button>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Audio Volume:</span>
+            <input type="range" id="volume-slider" min="0" max="100" value="70" class="retro-slider">
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">CRT Scanline Overlay:</span>
+            <button id="btn-toggle-crt" class="retro-toggle-btn active">ON</button>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Current Progress:</span>
+            <span id="settings-save-status" class="save-indicator">Auto-saved to LocalStorage</span>
+          </div>
+
+          <div class="settings-actions">
+            <button id="btn-resume-game" class="retro-btn btn-primary">RESUME GAME</button>
+            <button id="btn-settings-restart" class="retro-btn btn-danger">RESTART RUN</button>
+            <button id="btn-settings-menu" class="retro-btn btn-secondary">RETURN TO TITLE</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- MODAL: HOW TO PLAY -->
+    <!-- ============================================================= -->
+    <div id="modal-howtoplay" class="modal-backdrop modal-hidden" role="dialog" aria-modal="true" aria-labelledby="htp-title">
+      <div class="modal-card retro-panel htp-card">
+        <header class="panel-header">
+          <h3 class="panel-title pixel-text" id="htp-title">HOW TO PLAY</h3>
+          <button id="btn-close-htp" class="retro-btn-sm" aria-label="Close How to Play">✖</button>
+        </header>
+
+        <div class="htp-body">
+          <p class="htp-intro">
+            Welcome to <strong>Campus Chaos</strong>! You will guide an engineering student through 4 pivotal years of college life.
+          </p>
+
+          <div class="htp-stats-guide">
+            <div class="htp-stat-item">
+              <span class="htp-icon">📚</span>
+              <div>
+                <strong>Academics:</strong> Attendance, internal exams, lab exams, and GPA. Keep it above 75% to avoid detention!
+              </div>
+            </div>
+            <div class="htp-stat-item">
+              <span class="htp-icon">💻</span>
+              <div>
+                <strong>Coding Skills:</strong> LeetCode, full-stack projects, and system design. High skills unlock top-tier tech roles.
+              </div>
+            </div>
+            <div class="htp-stat-item">
+              <span class="htp-icon">⚡</span>
+              <div>
+                <strong>Energy:</strong> Health, sleep, and sanity. If energy hits rock bottom, you risk burnout and penalty choices!
+              </div>
+            </div>
+            <div class="htp-stat-item">
+              <span class="htp-icon">🤝</span>
+              <div>
+                <strong>Relationships:</strong> Friends, club seniors, teamwork, and networking. Unlocks referrals and mental resilience.
+              </div>
+            </div>
+            <div class="htp-stat-item">
+              <span class="htp-icon">💼</span>
+              <div>
+                <strong>Career Readiness:</strong> Resumes, mock interviews, cold emails, and internship experience.
+              </div>
+            </div>
+          </div>
+
+          <div class="htp-tips">
+            <h4 class="pixel-text-sm">PRO-TIPS:</h4>
+            <ul>
+              <li>Every decision is a trade-off. You can't max out everything at once!</li>
+              <li>There are <strong>5 distinct endings</strong> based on your stat distribution and milestones.</li>
+              <li>The game auto-saves after every choice in your browser's LocalStorage.</li>
+              <li>Press <kbd>M</kbd> anytime to toggle retro sound effects.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="btn-htp-gotit" class="retro-btn btn-primary">GOT IT, LET'S PLAY!</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- MODAL: PERKS & INVENTORY -->
+    <!-- ============================================================= -->
+    <div id="modal-inventory" class="modal-backdrop modal-hidden" role="dialog" aria-modal="true" aria-labelledby="inv-title">
+      <div class="modal-card retro-panel inv-card">
+        <header class="panel-header">
+          <h3 class="panel-title pixel-text" id="inv-title">PERKS & MILESTONES</h3>
+          <button id="btn-close-inventory" class="retro-btn-sm" aria-label="Close Perks">✖</button>
+        </header>
+
+        <div class="inv-body">
+          <div class="inv-summary">
+            Current Department: <strong id="inv-dept-name">CSE</strong> | Trait: <strong id="inv-trait-name">Code Wizard</strong>
+          </div>
+          <div class="perks-list" id="inv-perks-list">
+            <!-- Dynamic perks -->
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="btn-close-inventory-bottom" class="retro-btn btn-secondary">CLOSE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- MODAL: CONFIRMATION PROMPT -->
+    <!-- ============================================================= -->
+    <div id="modal-confirm" class="modal-backdrop modal-hidden" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+      <div class="modal-card retro-panel confirm-card">
+        <h3 class="pixel-text" id="confirm-title">START NEW RUN?</h3>
+        <p id="confirm-message">This will overwrite your existing saved journey. Are you sure you want to start fresh?</p>
+        <div class="confirm-actions">
+          <button id="btn-confirm-yes" class="retro-btn btn-danger">YES, RESTART</button>
+          <button id="btn-confirm-no" class="retro-btn btn-secondary">CANCEL</button>
+        </div>
+      </div>
+    </div>
+
+  </div> <!-- /game-container -->
+
+  <!-- Game Logic Script -->
+  <script src="script.js"></script>
+</body>
+</html>
