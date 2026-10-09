@@ -4,7 +4,6 @@
 ![Version](https://img.shields.io/badge/version-1.0.0-cyan.svg)
 ![Tech Stack](https://img.shields.io/badge/tech-HTML5%20%7C%20CSS3%20%7C%20Vanilla%20JS-magenta.svg)
 ![Audio](https://img.shields.io/badge/audio-8--bit%20Web%20Audio%20Synth-yellow.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 ---
 
